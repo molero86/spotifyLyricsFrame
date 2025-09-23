@@ -1,14 +1,13 @@
 # Spotify Lyrics Frame
 
-A Raspberry Pi project to display lyrics for the currently playing Spotify song. This project provides a lightweight web app that connects to the Spotify API to show the currently playing track and fetches lyrics from Musixmatch.
+A Raspberry Pi project to display lyrics for the currently playing Spotify song. This project provides a lightweight web app that connects to the Spotify API to show the currently playing track and fetches lyrics using the `spotify-lyrics-api`.
 
 ## Features
 
 -   Displays the currently playing song from your Spotify account.
--   Fetches and displays song lyrics from Musixmatch.
+-   Fetches and displays time-synced song lyrics.
 -   Album cover art as a blurred background.
 -   Automatic track change detection.
--   Lyrics caching to reduce API calls.
 -   Designed for fullscreen (kiosk mode) displays.
 
 ## Setup
@@ -22,7 +21,7 @@ cd spotify-lyrics-frame
 
 ### 2. API Credentials
 
-You will need API credentials from both Spotify and Musixmatch.
+You will need API credentials from Spotify.
 
 **Spotify:**
 
@@ -30,12 +29,6 @@ You will need API credentials from both Spotify and Musixmatch.
 2.  Create a new application.
 3.  Note down your `Client ID` and `Client Secret`.
 4.  In your application settings, add a `Redirect URI`: `http://localhost:8888/callback`.
-
-**Musixmatch:**
-
-1.  Go to the [Musixmatch Developer](https://developer.musixmatch.com/).
-2.  Sign up for an API key.
-3.  Note down your `API Key`.
 
 **Create `.env` file:**
 
@@ -45,7 +38,6 @@ Create a file named `.env` in the root of the project and add your credentials a
 SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 SPOTIFY_REDIRECT_URI=http://localhost:8888/callback
-LYRICS_API_KEY=your_musixmatch_api_key
 ```
 
 ### 3. Install Dependencies
@@ -119,4 +111,4 @@ Now, when you reboot your Raspberry Pi, it should automatically launch Chromium 
 ## Known Limitations
 
 -   **Token Storage:** The Spotify access and refresh tokens are stored in memory. This means that if the server restarts, you will need to log in with Spotify again. For a more robust solution, you would need to implement a persistent storage mechanism for the tokens.
--   **Lyric Synchronization:** The lyric synchronization is based on an estimation of the song's progress, as the free Musixmatch API does not provide timestamps. The accuracy of the highlighting may vary.
+-   **Lyric Synchronization:** The lyric synchronization is now based on timestamps provided by the `spotify-lyrics-api`, so it should be much more accurate.

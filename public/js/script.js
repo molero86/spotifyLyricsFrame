@@ -8,7 +8,6 @@ window.addEventListener('load', () => {
 
     let currentTrackId = null;
     let lyricsLines = [];
-    let songDuration = 0;
 
     function checkAuth() {
         fetch('/api/currently-playing')
@@ -49,7 +48,7 @@ window.addEventListener('load', () => {
                     if (data.item.id !== currentTrackId) {
                         currentTrackId = data.item.id;
                         updateUI(data);
-                        getLyrics(data.item.artists[0].name, data.item.name);
+                        getLyrics(data.item.id);
                     }
                     updateLyricHighlight(data.progress_ms);
                 }
@@ -61,15 +60,14 @@ window.addEventListener('load', () => {
         titleEl.textContent = data.item.name;
         artistEl.textContent = data.item.artists.map(artist => artist.name).join(', ');
         backgroundEl.style.backgroundImage = `url(${data.item.album.images[0].url})`;
-        songDuration = data.item.duration_ms;
     }
 
-    function getLyrics(artist, title) {
-        fetch(`/api/lyrics?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`)
+    function getLyrics(trackId) {
+        fetch(`/api/lyrics?trackId=${trackId}`)
             .then(res => res.json())
             .then(data => {
-                if (data.message.body.lyrics) {
-                    lyricsLines = data.message.body.lyrics.lyrics_body.split('\n').filter(line => line.trim() !== '');
+                if (data.lyrics) {
+                    lyricsLines = data.lyrics.lines;
                     displayLyrics();
                 } else {
                     lyricsEl.innerHTML = '<span>Lyrics not found for this song.</span>';
@@ -82,14 +80,20 @@ window.addEventListener('load', () => {
     }
 
     function displayLyrics() {
-        lyricsEl.innerHTML = lyricsLines.map(line => `<span>${line}</span>`).join('<br>');
+        lyricsEl.innerHTML = lyricsLines.map(line => `<span>${line.words}</span>`).join('<br>');
     }
 
     function updateLyricHighlight(progress) {
         if (lyricsLines.length === 0) return;
 
-        const timePerLine = songDuration / lyricsLines.length;
-        const currentLineIndex = Math.floor(progress / timePerLine);
+        let currentLineIndex = -1;
+        for (let i = 0; i < lyricsLines.length; i++) {
+            if (progress >= lyricsLines[i].startTimeMs) {
+                currentLineIndex = i;
+            } else {
+                break;
+            }
+        }
 
         const lyricSpans = lyricsEl.querySelectorAll('span');
         lyricSpans.forEach((span, index) => {

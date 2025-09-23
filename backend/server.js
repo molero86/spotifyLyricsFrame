@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const querystring = require('querystring');
+const { Spotifly } = require('@manhgdev/spotifyweb');
 
 const app = express();
 const port = 8888;
@@ -14,7 +15,7 @@ const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 let access_token = '';
 let refresh_token = '';
 
-const lyricsCache = new Map();
+const sp = new Spotifly();
 
 const generateRandomString = (length) => {
     let text = '';
@@ -123,30 +124,14 @@ app.get('/api/currently-playing', (req, res) => {
         });
 });
 
-app.get('/api/lyrics', (req, res) => {
-    const { artist, title } = req.query;
-    const cacheKey = `${artist}:${title}`;
-
-    if (lyricsCache.has(cacheKey)) {
-        return res.send(lyricsCache.get(cacheKey));
+app.get('/api/lyrics', async (req, res) => {
+    const { trackId } = req.query;
+    try {
+        const lyrics = await sp.getTrackLyrics(trackId);
+        res.send(lyrics);
+    } catch (error) {
+        res.status(500).send({ error: 'Could not fetch lyrics.' });
     }
-
-    const apiKey = process.env.LYRICS_API_KEY;
-    const url = `https://api.musixmatch.com/ws/1.1/matcher.lyrics.get?q_track=${encodeURIComponent(title)}&q_artist=${encodeURIComponent(artist)}&apikey=${apiKey}`;
-
-    axios.get(url)
-        .then(response => {
-            if (response.data.message.body.lyrics) {
-                let lyrics = response.data.message.body.lyrics.lyrics_body;
-                lyrics = lyrics.replace('******* This Lyrics is NOT for Commercial use *******', '');
-                response.data.message.body.lyrics.lyrics_body = lyrics;
-            }
-            lyricsCache.set(cacheKey, response.data);
-            res.send(response.data);
-        })
-        .catch(error => {
-            res.send(error);
-        });
 });
 
 app.listen(port, () => {
