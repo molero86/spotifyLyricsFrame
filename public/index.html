@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Lyrics Frame</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="login-container" class="content">
+        <h1>Spotify Lyrics Frame</h1>
+        <p>Please log in with your Spotify account to continue.</p>
+        <a href="/login" class="login-button">Log in with Spotify</a>
+    </div>
+
+    <div id="main-content" class="hidden">
+        <div class="background"></div>
+        <div class="content">
+            <div class="song-info">
+                <h1 id="title"></h1>
+                <h2 id="artist"></h2>
+            </div>
+            <div class="lyrics-container">
+                <p id="lyrics"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
