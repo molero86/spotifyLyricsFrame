@@ -81,8 +81,11 @@ window.addEventListener('load', () => {
     function getLyrics(data) {
         const track = data.item.name;
         const artist = data.item.artists.map(artist => artist.name).join(', ');
+        const isrc = data.item.external_ids ? data.item.external_ids.isrc : null;
+        console.log("FullData:", data);
+        console.log("ISRC:", isrc);
         console.log(`Fetching lyrics for ${track} by ${artist}`);
-        fetch(`/api/lyrics?track=${encodeURIComponent(track)}&artist=${encodeURIComponent(artist)}`)
+        fetch(`/api/lyrics?track=${encodeURIComponent(track)}&artist=${encodeURIComponent(artist)}&isrc=${encodeURIComponent(isrc)}`)
             .then(res => res.json())
             .then(data => {
                 if (data.syncedLyrics) {

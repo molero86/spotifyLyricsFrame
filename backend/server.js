@@ -133,7 +133,7 @@ app.get("/api/currently-playing", async (req, res) => {
 
 // 📝 Obtener letra (con timestamps si hay)
 app.get("/api/lyrics", async (req, res) => {
-  const { track, artist } = req.query;
+  const { track, artist, isrc } = req.query;
 
   if (!track || !artist) {
     return res.status(400).send({ error: "Track and artist are required" });
@@ -141,11 +141,27 @@ app.get("/api/lyrics", async (req, res) => {
 
   try {
     const lyricsClient = new LyricsClient();
+    
+    if(isrc) {
+        log("Searching lyrics by ISRC:", isrc);
+        const dataByISRC = await lyricsClient.getSyncedLyricsByISRC(isrc);
+        console.log("DataByISRC:", dataByISRC);
+        if(!dataByISRC.success) {
+            log("Lyrics found but do not match the requested ISRC:", dataByISRC.isrc);
+        }
+        else {
+            return res.send(dataByISRC);
+        }
+    }
+    
+    log("Searching lyrics by track and artist:", track, artist);
     const data = await lyricsClient.searchAndGetSyncedLyrics(track, artist);
-
-    // data.synced → array con { time, words }
-    // data.unsynced → texto simple
-    res.send(data);
+    if(data.title !== track || data.songInfo.artist !== artist) {
+        log("Lyrics found but do not match the requested track/artist:", data.title, data.songInfo.artist);
+        return res.status(404).send({ error: "Lyrics not found for the specified track and artist." });
+    }
+    return res.send(data);
+    
   } catch (error) {
     console.error("Error fetching lyrics:", error.message);
     res.status(500).send({ error: "Could not fetch lyrics." });
