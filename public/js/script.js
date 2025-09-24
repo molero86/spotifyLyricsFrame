@@ -5,9 +5,25 @@ window.addEventListener('load', () => {
     const artistEl = document.getElementById('artist');
     const lyricsEl = document.getElementById('lyrics');
     const backgroundEl = document.querySelector('.background');
+    let isPlaying = true; // controla si seguimos actualizando
 
     let currentTrackId = null;
     let lyricsLines = [];
+
+    const togglePlayButton = document.getElementById('toggle-play');
+    const playIconPath = togglePlayButton.querySelector('path');
+    
+    togglePlayButton.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+
+        if (!isPlaying) {
+            // Mostrar play
+            playIconPath.setAttribute('d', 'M8 5v14l11-7L8 5z'); 
+        } else {
+            // Mostrar pause
+            playIconPath.setAttribute('d', 'M6 5h4v14H6V5zm8 0h4v14h-4V5z');
+        }
+    });
 
     function checkAuth() {
         fetch('/api/currently-playing')
@@ -48,7 +64,7 @@ window.addEventListener('load', () => {
                     if (data.item.id !== currentTrackId) {
                         currentTrackId = data.item.id;
                         updateUI(data);
-                        getLyrics(data.item.id);
+                        getLyrics(data);
                     }
                     updateLyricHighlight(data.progress_ms);
                 }
@@ -62,12 +78,15 @@ window.addEventListener('load', () => {
         backgroundEl.style.backgroundImage = `url(${data.item.album.images[0].url})`;
     }
 
-    function getLyrics(trackId) {
-        fetch(`/api/lyrics?trackId=${trackId}`)
+    function getLyrics(data) {
+        const track = data.item.name;
+        const artist = data.item.artists.map(artist => artist.name).join(', ');
+        console.log(`Fetching lyrics for ${track} by ${artist}`);
+        fetch(`/api/lyrics?track=${encodeURIComponent(track)}&artist=${encodeURIComponent(artist)}`)
             .then(res => res.json())
             .then(data => {
-                if (data.lyrics) {
-                    lyricsLines = data.lyrics.lines;
+                if (data.syncedLyrics) {
+                    lyricsLines = data.syncedLyrics;
                     displayLyrics();
                 } else {
                     lyricsEl.innerHTML = '<span>Lyrics not found for this song.</span>';
@@ -80,25 +99,34 @@ window.addEventListener('load', () => {
     }
 
     function displayLyrics() {
-        lyricsEl.innerHTML = lyricsLines.map(line => `<span>${line.words}</span>`).join('<br>');
+        lyricsEl.innerHTML = lyricsLines.map(line => 
+            `<span data-time="${line.time.total * 1000}">${line.text}</span>`
+        ).join('<br>');
     }
 
     function updateLyricHighlight(progress) {
         if (lyricsLines.length === 0) return;
 
-        let currentLineIndex = -1;
-        for (let i = 0; i < lyricsLines.length; i++) {
-            if (progress >= lyricsLines[i].startTimeMs) {
-                currentLineIndex = i;
-            } else {
-                break;
-            }
-        }
-
         const lyricSpans = lyricsEl.querySelectorAll('span');
+        let currentLineIndex = -1;
+
+        lyricSpans.forEach((span, index) => {
+            const lineTime = parseFloat(span.getAttribute('data-time'));
+            if (progress >= lineTime) {
+                currentLineIndex = index;
+            }
+        });
+
         lyricSpans.forEach((span, index) => {
             if (index === currentLineIndex) {
                 span.classList.add('current-line');
+                if(isPlaying)
+                {
+                    span.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center' // centra la línea actual
+                    });
+                }
             } else {
                 span.classList.remove('current-line');
             }
@@ -110,7 +138,7 @@ window.addEventListener('load', () => {
 
     // Poll every 1 second for smoother updates
     setInterval(() => {
-        if (!mainContent.classList.contains('hidden')) {
+        if (!mainContent.classList.contains('hidden') && isPlaying) {
             getCurrentlyPlaying();
         }
     }, 1000);

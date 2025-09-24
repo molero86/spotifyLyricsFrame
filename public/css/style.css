@@ -9,16 +9,13 @@ body, html {
 }
 
 .background {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: blur(20px) brightness(0.5);
-    transform: scale(1.1);
-    z-index: -1;
 }
 
 .content {
@@ -30,6 +27,9 @@ body, html {
     height: 100%;
     padding: 20px;
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+    background: transparent;
 }
 
 .song-info {
@@ -54,6 +54,15 @@ body, html {
     font-size: 2em;
     line-height: 1.5;
     font-weight: bold;
+    max-height: 80vh;
+    overflow-y: auto;
+    /* Ocultar barra de scroll pero permitir scroll */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    padding: 2%;
 }
 
 #lyrics .current-line {
@@ -79,4 +88,25 @@ body, html {
 
 .login-button:hover {
     background-color: #1ed760;
+}
+.controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+#toggle-play {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#toggle-play svg {
+    width: 32px;
+    height: 32px;
 }

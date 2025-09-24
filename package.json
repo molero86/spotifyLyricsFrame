@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "@manhgdev/spotifyweb": "^4.0.3",
+    "@mjba/lyrics": "^1.1.0",
     "axios": "^1.12.2",
     "dotenv": "^17.2.2",
-    "express": "^4.18.2"
-  }
+    "express": "^4.21.2"
+  },
+  "type": "module"
 }
