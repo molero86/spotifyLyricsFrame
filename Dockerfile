@@ -1,20 +1,11 @@
-# Use an official Node.js runtime as a parent image
-FROM node:18-slim
+FROM node:20-alpine
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
+RUN npm install --production
 
-# Install any needed packages
-RUN npm install
-
-# Copy the rest of the application's code
 COPY . .
 
-# Make port 8888 available to the world outside this container
 EXPOSE 8888
-
-# Run the app when the container launches
-CMD [ "npm", "start" ]
+CMD ["node", "backend/server.js"]
