@@ -56,4 +56,10 @@ jobs:
                 docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME}}:latest
                 docker stop ${{ env.IMAGE_NAME}} || true
                 docker rm ${{ env.IMAGE_NAME}} || true
-                docker run --name ${{ env.IMAGE_NAME}} -d -p 4016:${{ env.CONTAINER_PORT}} ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME}}:latest
+                docker run --name ${{ env.IMAGE_NAME }} -d \
+                  -p 4016:${{ env.CONTAINER_PORT }} \
+                  -e SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }} \
+                  -e SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }} \
+                  -e SPOTIFY_REDIRECT_URI=${{ secrets.SPOTIFY_REDIRECT_URI }} \
+                  ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
