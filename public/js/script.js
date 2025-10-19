@@ -6,6 +6,43 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Evita que el navegador muestre el prompt automáticamente
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // Muestra un botón o banner personalizado para instalar
+  const installButton = document.createElement('button');
+  installButton.textContent = 'Instalar aplicación';
+  installButton.id = 'install-button';
+  installButton.style.position = 'fixed';
+  installButton.style.bottom = '20px';
+  installButton.style.right = '20px';
+  installButton.style.padding = '10px 20px';
+  installButton.style.background = '#1DB954';
+  installButton.style.color = 'white';
+  installButton.style.border = 'none';
+  installButton.style.borderRadius = '8px';
+  installButton.style.cursor = 'pointer';
+  document.body.appendChild(installButton);
+
+  installButton.addEventListener('click', async () => {
+    installButton.disabled = true;
+    // Muestra el prompt de instalación
+    deferredPrompt.prompt();
+
+    // Espera la respuesta del usuario
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    deferredPrompt = null;
+
+    // Oculta el botón tras instalar o rechazar
+    installButton.remove();
+  });
+});
+
 
 window.addEventListener('load', () => {
     const loginContainer = document.getElementById('login-container');
